@@ -92,7 +92,7 @@ static int negamax(struct position *pos, struct search_stack *ss, int alpha,
 
 		pos_undo_move(pos, move);
 
-		if (isroot)
+		if (isroot && pvnode)
 			print_info(value, ss + 1, move);
 		ss->nodes += (ss + 1)->nodes;
 
@@ -132,7 +132,7 @@ void search(struct position *pos)
 	struct search_stack search_stack[MAX_MOVES + 2];
 	struct search_stack *ss = search_stack + 2;
 	size_t ply;
-	int value;
+	int low = -MATE, high = +MATE, bound, value = 0;
 	enum move bestmove = MOVE_NONE;
 
 	mp_clear();
@@ -149,7 +149,19 @@ void search(struct position *pos)
 	time_start = gettime();
 	*ss->pv = MOVE_NONE;
 
-	value = negamax(pos, ss, -MATE, +MATE);
+	/* MTD(f) */
+	while (low < high) {
+		bound = MAX(value, low + 1);
+		value = negamax(pos, ss, bound - 1, bound);
+		if (value < bound)
+			high = value;
+		else
+			low = value;
+		print_info(value, ss, MOVE_NONE);
+	}
+
+	/* PVS */
+	value = negamax(pos, ss, value - 1, value + 1);
 
 	bestmove = *ss->pv;
 	print_info(value, ss, MOVE_NONE);

@@ -48,7 +48,7 @@ int main(void)
 	setbuf(stdout, nullptr);
 
 	pos_init();
-	tt_init(256);
+	tt_init(512);
 
 	for (running = true; running;) {
 		readline(cmd);
