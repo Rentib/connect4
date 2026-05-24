@@ -78,3 +78,11 @@ void tt_store(u64 key, int ply, int value, enum tt_bound bound)
 	et->value = value_to(value, ply);
 	et->bound = bound;
 }
+
+size_t tt_hashfull(void)
+{
+	size_t used = 0, i;
+	for (i = 0; i < 1000; i++)
+		used += tt.entries[i].bound != TT_NONE;
+	return used;
+}

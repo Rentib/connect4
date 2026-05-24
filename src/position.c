@@ -52,7 +52,7 @@ void pos_print(const struct position *pos)
 		}
 		printf("\n  %s\n", sep);
 	}
-	printf("    a   b   c   d   e   f   g\n");
+	printf("    1   2   3   4   5   6   7\n");
 	printf("    Turn: %s\n", pos->stm == WHITE ? "WHITE" : "BLACK");
 	printf("    Key:  %016lX\n", pos->key);
 }

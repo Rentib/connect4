@@ -6,7 +6,7 @@ CFLAGS  = -std=c2x -Wall -Wextra -Werror -pedantic -pthread \
 LDFLAGS = -pthread -lm
 CC      = clang
 
-REQ = bitboards position search transposition util
+REQ = bitboards movepicker position search transposition util
 
 all: CFLAGS += -O3 -ffast-math
 all: CFLAGS += -march=native -m64 -mpopcnt

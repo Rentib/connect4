@@ -22,6 +22,7 @@ static void position_(struct position *pos, char *fmt)
 {
 	enum move move_list[FILES], *last, *m;
 
+	pos_reset(pos);
 	for (; *fmt; fmt++) {
 		last = pos_moves(pos, move_list);
 		for (m = move_list; m != last; m++) {
@@ -49,7 +50,6 @@ int main(void)
 	pos_init();
 	tt_init(256);
 
-	pos_reset(pos);
 	for (running = true; running;) {
 		readline(cmd);
 		if (!*cmd)

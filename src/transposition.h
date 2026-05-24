@@ -17,4 +17,6 @@ void tt_clear(void);
 bool tt_probe(u64 key, int ply, int *value, enum tt_bound *bound);
 void tt_store(u64 key, int ply, int  value, enum tt_bound  bound);
 
+size_t tt_hashfull(void);
+
 #endif /* TRANSPOSITION_H_ */

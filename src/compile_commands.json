@@ -52,6 +52,32 @@
     "output": "bitboards.o"
   },
   {
+    "file": "movepicker.c",
+    "arguments": [
+      "/usr/bin/clang",
+      "-o",
+      "movepicker.o",
+      "-c",
+      "-std=c2x",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-pedantic",
+      "-pthread",
+      "-DVERSION=\"dev\"",
+      "-O3",
+      "-ffast-math",
+      "-march=native",
+      "-m64",
+      "-mpopcnt",
+      "-mbmi2",
+      "-DUSE_PEXT",
+      "movepicker.c"
+    ],
+    "directory": "/home/rentib/misc/projects/gry/connect4/src",
+    "output": "movepicker.o"
+  },
+  {
     "file": "position.c",
     "arguments": [
       "/usr/bin/clang",

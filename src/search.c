@@ -2,19 +2,33 @@
 #include <stdlib.h>
 
 #include "connect4.h"
+#include "movepicker.h"
 #include "position.h"
 #include "search.h"
 #include "transposition.h"
 #include "util.h"
 
-struct search_stack {
-	int ply;
-	enum move move;
-	enum move *pv;
-};
-
-static u64 nodes;
 static u64 time_start;
+
+static void print_info(int value, struct search_stack *ss, enum move move)
+{
+	size_t ply;
+	u64 time = gettime() - time_start;
+
+	value = value > 0 ? +(MATE - value + 1) / 2 : -(MATE + value + 1) / 2;
+
+	printf("info ");
+	if (move != MOVE_NONE)
+		printf("rootmove %s ", MOVE_STR(move));
+	printf("score %d ", value);
+	printf("nodes %zu ", ss->nodes);
+	printf("hashfull %zu ", tt_hashfull());
+	printf("time %zu ", time);
+	printf("pv ");
+	for (ply = 0; ss->pv[ply] != MOVE_NONE; ply++)
+		printf("%s", MOVE_STR(ss->pv[ply]));
+	printf("\n");
+}
 
 static void update_pv(struct search_stack *ss, enum move move)
 {
@@ -28,18 +42,19 @@ static void update_pv(struct search_stack *ss, enum move move)
 static int negamax(struct position *pos, struct search_stack *ss, int alpha,
 		   int beta)
 {
-	enum move move_list[FILES], *last, *m;
-
 	bool pvnode = beta - alpha != 1;
+	bool isroot = ss->ply == 0;
 	int origalpha = alpha;
 	enum move move, bestmove = MOVE_NONE;
 	int value, bestvalue = -MATE;
 	int tt_value;
 	bool tt_hit;
 	enum tt_bound tt_bound;
+	struct move_picker mp;
+	enum move moves[FILES];
 	size_t movecount = 0;
 
-	nodes++;
+	ss->nodes = 1;
 
 	if (pos_moves_played(pos) >= MATE - 2)
 		return 0;
@@ -63,28 +78,10 @@ static int negamax(struct position *pos, struct search_stack *ss, int alpha,
 
 	ss->pv[0] = MOVE_NONE;
 	(ss + 1)->pv[0] = MOVE_NONE;
-	last = pos_moves(pos, move_list);
 
-	/* mate in one */
-	for (m = move_list; bestvalue < beta && m != last; m++) {
-		move = *m;
-		movecount++;
-
-		pos_do_move(pos, move);
-		if (pos_is_loss(pos)) {
-			bestmove = move;
-			bestvalue = MATE_IN(ss->ply + 1);
-			if (bestvalue > alpha) {
-				alpha = bestvalue;
-				update_pv(ss, bestmove);
-			}
-		}
-		pos_undo_move(pos, move);
-	}
-
-	for (m = move_list; bestvalue < beta && m != last; m++) {
-		move = *m;
-
+	mp_init(&mp, pos);
+	while ((move = mp_next(&mp)) != MOVE_NONE) {
+		moves[movecount++] = move;
 		ss->move = move;
 		pos_do_move(pos, move);
 
@@ -95,20 +92,28 @@ static int negamax(struct position *pos, struct search_stack *ss, int alpha,
 
 		pos_undo_move(pos, move);
 
+		if (isroot)
+			print_info(value, ss + 1, move);
+		ss->nodes += (ss + 1)->nodes;
+
 		if (value <= bestvalue)
 			continue;
 
 		bestvalue = value;
 		bestmove = move;
 
-		if (value >= beta)
+		if (value >= beta) {
 			break;
+		}
 
 		if (value > alpha) {
 			alpha = value;
 			update_pv(ss, bestmove);
 		}
 	}
+
+	if (bestvalue >= beta)
+		mp_update(pos, ss, moves, movecount);
 
 	if (movecount == 0) /* no legal moves */
 		bestvalue = 0;
@@ -129,31 +134,23 @@ void search(struct position *pos)
 	int value;
 	enum move bestmove = MOVE_NONE;
 
+	mp_clear();
 	tt_clear();
 
 	for (ply = 0; ply < MAX_MOVES; ply++) {
 		(ss + ply)->ply = ply;
 		(ss + ply)->move = MOVE_NONE;
 		(ss + ply)->pv = ecalloc(MAX_MOVES - ply, sizeof(enum move));
+		(ss + ply)->nodes = 0;
 	}
 
-	nodes = 0;
 	time_start = gettime();
 	*ss->pv = MOVE_NONE;
 
 	value = negamax(pos, ss, -MATE, +MATE);
 
 	bestmove = *ss->pv;
-	value = value > 0 ? +(MATE - value + 1) / 2 : -(MATE + value + 1) / 2;
-
-	printf("info ");
-	printf("score %d ", value);
-	printf("nodes %zu ", nodes);
-	printf("time %zu ", gettime() - time_start);
-	printf("pv ");
-	for (ply = 0; ss->pv[ply] != MOVE_NONE; ply++)
-		printf("%s", MOVE_STR(ss->pv[ply]));
-	printf("\n");
+	print_info(value, ss, MOVE_NONE);
 
 	for (ply = 0; ply < MAX_MOVES; ply++)
 		free((ss + ply)->pv);
