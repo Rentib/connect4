@@ -9,7 +9,7 @@ static int history[COLOR_NB][SQUARE_NB];
 
 constexpr int MAX_SCORE = 1 << 16;
 
-void mp_init(struct move_picker *mp, struct position *pos)
+void mp_init(struct move_picker *mp, struct position *pos, enum move killer)
 {
 	enum move moves[FILES], *last, *m;
 	struct scored_move *move;
@@ -28,7 +28,9 @@ void mp_init(struct move_picker *mp, struct position *pos)
 		pos_undo_move(pos, *m);
 
 		if (is_mate) {
-			move->score = 2 * MAX_SCORE;
+			move->score = MAX_SCORE << 2;
+		} else if (*m == killer) {
+			move->score = MAX_SCORE << 1;
 		} else {
 			bonus = FILES - ABS((int)SQ_FILE(*m) - 3);
 			bonus = MAX_SCORE / (FILES * FILES) * (bonus * bonus);

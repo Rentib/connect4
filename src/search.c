@@ -74,12 +74,12 @@ static int negamax(struct position *pos, struct search_stack *ss, int alpha,
 	     (tt_bound == TT_UPPER && tt_value <= alpha)))
 		return tt_value;
 
-	ss->move = MOVE_NONE;
-
 	ss->pv[0] = MOVE_NONE;
 	(ss + 1)->pv[0] = MOVE_NONE;
+	ss->move = MOVE_NONE;
+	(ss + 1)->killer = MOVE_NONE;
 
-	mp_init(&mp, pos);
+	mp_init(&mp, pos, ss->killer);
 	while ((move = mp_next(&mp)) != MOVE_NONE) {
 		moves[movecount++] = move;
 		ss->move = move;
@@ -103,6 +103,7 @@ static int negamax(struct position *pos, struct search_stack *ss, int alpha,
 		bestmove = move;
 
 		if (value >= beta) {
+			ss->killer = move;
 			break;
 		}
 
@@ -139,9 +140,10 @@ void search(struct position *pos)
 
 	for (ply = 0; ply < MAX_MOVES; ply++) {
 		(ss + ply)->ply = ply;
-		(ss + ply)->move = MOVE_NONE;
-		(ss + ply)->pv = ecalloc(MAX_MOVES - ply, sizeof(enum move));
 		(ss + ply)->nodes = 0;
+		(ss + ply)->pv = ecalloc(MAX_MOVES - ply, sizeof(enum move));
+		(ss + ply)->move = MOVE_NONE;
+		(ss + ply)->killer = MOVE_NONE;
 	}
 
 	time_start = gettime();

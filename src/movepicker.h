@@ -15,7 +15,8 @@ struct move_picker {
 	size_t count;
 };
 
-void mp_init(struct move_picker *move_picker, struct position *position);
+void mp_init(struct move_picker *move_picker, struct position *position,
+	     enum move killer);
 enum move mp_next(struct move_picker *move_picker);
 
 void mp_clear(void);

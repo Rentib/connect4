@@ -5,9 +5,10 @@
 
 struct search_stack {
 	int ply;
-	enum move move;
-	enum move *pv;
 	u64 nodes;
+	enum move *pv;
+	enum move move;
+	enum move killer;
 };
 
 void search(struct position *position);

@@ -18,7 +18,7 @@ It needs to start from ply 5 or so.
 
 - Negamax with PVS
 - Transposition Table with Zobrist hashing and vertical symmetry
-- Move Ordering with History Heuristic and File Bonuses
+- Move Ordering with Killer, History, and File Bonuses
 - Bitboards Representation
 
 ## Building
