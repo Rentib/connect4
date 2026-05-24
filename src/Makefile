@@ -1,5 +1,5 @@
-VERSION = dev
-EXE     = connect4-$(VERSION)
+VERSION = 1.0
+EXE     = connect4-v$(VERSION)
 
 CFLAGS  = -std=c2x -Wall -Wextra -Werror -pedantic -pthread \
 		  -DVERSION=\"$(VERSION)\"
