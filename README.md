@@ -16,7 +16,7 @@ It needs to start from ply 5 or so.
 
 ## Features
 
-- Negamax with PVS
+- NegaC* + Negamax with PVS
 - Transposition Table with Zobrist hashing and vertical symmetry
 - Move Ordering with Killer, History, and File Bonuses
 - Bitboards Representation

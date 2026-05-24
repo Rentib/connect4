@@ -132,7 +132,7 @@ void search(struct position *pos)
 	struct search_stack search_stack[MAX_MOVES + 2];
 	struct search_stack *ss = search_stack + 2;
 	size_t ply;
-	int low = -MATE, high = +MATE, bound, value = 0;
+	int low = -MATE, high = +MATE, bound, value = low;
 	enum move bestmove = MOVE_NONE;
 
 	mp_clear();
@@ -149,14 +149,14 @@ void search(struct position *pos)
 	time_start = gettime();
 	*ss->pv = MOVE_NONE;
 
-	/* MTD(f) */
+	/* NegaC* */
 	while (low < high) {
-		bound = MAX(value, low + 1);
-		value = negamax(pos, ss, bound - 1, bound);
-		if (value < bound)
-			high = value;
-		else
+		bound = (low + high) / 2;
+		value = negamax(pos, ss, bound, bound + 1);
+		if (value > bound)
 			low = value;
+		else
+			high = value;
 		print_info(value, ss, MOVE_NONE);
 	}
 
