@@ -14,6 +14,7 @@ void mp_init(struct move_picker *mp, struct position *pos)
 	enum move moves[FILES], *last, *m;
 	struct scored_move *move;
 	bool is_mate;
+	int bonus;
 
 	last = pos_moves(pos, moves);
 
@@ -29,8 +30,9 @@ void mp_init(struct move_picker *mp, struct position *pos)
 		if (is_mate) {
 			move->score = 2 * MAX_SCORE;
 		} else {
-			move->score = (FILES - ABS((int)SQ_FILE(*m) - 3)) * 10 +
-				      history[pos->stm][*m];
+			bonus = FILES - ABS((int)SQ_FILE(*m) - 3);
+			bonus = MAX_SCORE / (FILES * FILES) * (bonus * bonus);
+			move->score = bonus + history[pos->stm][*m];
 		}
 	}
 }
@@ -56,19 +58,18 @@ enum move mp_next(struct move_picker *mp)
 
 void mp_clear(void) { memset(history, 0, sizeof(history)); }
 
+static void update_history(int *score, int delta)
+{
+	*score += delta - *score * ABS(delta) / MAX_SCORE;
+}
+
 void mp_update(struct position *pos, struct search_stack *ss, enum move *moves,
 	       size_t count)
 {
 	size_t i;
-	int *score;
 	int depth = MAX_MOVES - ss->ply;
-	int delta;
 
 	for (i = 0; i < count - 1; i++)
-		history[pos->stm][moves[i]] -= 0;
-
-	score = &history[pos->stm][moves[i]];
-	delta = depth * depth;
-	*score += delta - *score * ABS(delta) / MAX_SCORE;
-	*score = 0;
+		update_history(&history[pos->stm][moves[i]], -depth);
+	update_history(&history[pos->stm][moves[i]], depth * depth);
 }
