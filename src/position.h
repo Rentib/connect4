@@ -6,7 +6,6 @@
 struct position {
 	enum color stm;
 	u64 color[COLOR_NB];
-	int game_ply;
 	u64 key, key_normal, key_mirror;
 };
 

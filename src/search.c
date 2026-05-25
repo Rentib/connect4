@@ -22,7 +22,6 @@ static void print_info(int value, struct search_stack *ss, enum move move)
 		printf("rootmove %s ", MOVE_STR(move));
 	printf("score %d ", value);
 	printf("nodes %zu ", ss->nodes);
-	printf("hashfull %zu ", tt_hashfull());
 	printf("time %zu ", time);
 	printf("pv ");
 	for (ply = 0; ss->pv[ply] != MOVE_NONE; ply++)
